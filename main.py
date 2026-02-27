@@ -1,32 +1,36 @@
 from fastapi import FastAPI
-import httpx
-import asyncio
+from pydantic import BaseModel
+from chat import chat_with_ai
 
-app = FastAPI(title="AI Agent学习项目")
+app = FastAPI(title="AI Agent学习项目 - Day1")
+
+class ChatRequest(BaseModel):
+    message: str
 
 @app.get("/")
 async def root():
-    return {"message": "Hello, I'm learning AI Agent!", "status": "ok"}
-
-@app.get("/search")
-async def search(query: str):
-    """模拟搜索工具 - 第7天会换成真实的"""
     return {
-        "query": query,
-        "results": [f"关于 '{query}' 的模拟结果1", "模拟结果2"],
-        "source": "mock_database"
+        "message": "AI Agent API 运行中",
+        "status": "ok",
+        "features": ["/chat - AI对话", "/search - 模拟搜索"]
     }
 
 @app.post("/chat")
-async def chat(message: str):
-    """模拟对话接口 - 第4天接入真实LLM"""
+async def chat_endpoint(request: ChatRequest):
+    """真实AI对话接口"""
+    ai_reply = chat_with_ai(request.message)
     return {
-        "user_message": message,
-        "ai_reply": f"我收到了你的消息：{message}。明天我会学会调用真实的大模型来回答你！",
-        "timestamp": "2024-02-10"
+        "user_message": request.message,
+        "ai_reply": ai_reply,
+        "model": "deepseek-chat",
+        "note": "知识截止2024-07，明天接入实时搜索"
     }
 
-# 运行命令：uvicorn main:app --reload
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/search")
+async def search(query: str):
+    """明天升级为真实搜索工具"""
+    return {
+        "query": query,
+        "results": ["模拟结果：明天这里会调用真实搜索API"],
+        "status": "placeholder"
+    }
